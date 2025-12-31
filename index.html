@@ -3,131 +3,178 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Toy Factory: Nightmare Shift</title>
+<title>Factory Sin – Nightmare</title>
 
 <style>
 body{
 margin:0;
 background:black;
-color:#0f0;
-font-family:monospace;
+color:white;
+font-family:Arial;
+overflow:hidden;
+}
+#scene{
+position:relative;
+height:100vh;
+background:radial-gradient(circle at center,#111,#000);
+}
+#enemy{
+position:absolute;
+bottom:10%;
+left:40%;
+width:120px;
+height:200px;
+background:url("enemy.png") center/cover;
+display:none;
+filter:drop-shadow(0 0 20px red);
+}
+#enemy2{
+position:absolute;
+top:20%;
+right:10%;
+width:120px;
+height:200px;
+background:url("mother.png") center/cover;
+display:none;
+filter:drop-shadow(0 0 20px hotpink);
+}
+#ui{
+position:fixed;
+bottom:10px;
+width:100%;
 text-align:center;
 }
 button{
-width:45%;
-padding:12px;
-margin:5px;
+padding:14px;
+margin:4px;
+font-size:18px;
 background:black;
-color:#0f0;
-border:2px solid #0f0;
-font-size:16px;
+color:red;
+border:2px solid red;
 }
-#jumpscare{
+#msg{
+position:fixed;
+top:10px;
+width:100%;
+text-align:center;
+font-size:18px;
+}
+#tv{
 display:none;
 position:fixed;
 inset:0;
 background:black;
-z-index:999;
-}
-#jumpscare img{
-width:100%;
-height:100%;
-object-fit:cover;
+color:#0f0;
+padding:20px;
+font-size:18px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="lang">
-<h2>Select Language</h2>
-<button onclick="setLang('es')">Español</button>
-<button onclick="setLang('en')">English</button>
-<button onclick="setLang('pt')">Português</button>
+<div id="scene">
+  <div id="enemy"></div>
+  <div id="enemy2"></div>
 </div>
 
-<div id="game" style="display:none;">
-<h2 id="title"></h2>
-<p id="night"></p>
-<p id="status"></p>
-<p id="power"></p>
+<div id="msg"></div>
 
-<button onclick="toggleDoor()">🚪 Puerta</button>
-<button onclick="camera()">📷 Cámaras</button>
+<div id="ui">
+  <button onclick="move()">⬆️ Avanzar</button><br>
+  <button onclick="turn('l')">⬅️ Girar</button>
+  <button onclick="turn('r')">➡️ Girar</button><br>
+  <button onclick="interact()">🖐️ Interactuar</button>
 </div>
 
-<div id="jumpscare">
-<img src="jumpscare.jpg">
-</div>
-
-<audio id="step" src="step.mp3"></audio>
-<audio id="breath" src="breath.mp3"></audio>
-<audio id="bang" src="bang.mp3"></audio>
-<audio id="scream" src="scream.mp3"></audio>
+<div id="tv"></div>
 
 <script>
-let lang="es";
-let power=100;
-let door=false;
-let alive=true;
-let nightNum=localStorage.getItem("night")||1;
-let anims=["MR. GRIN","LULLA","CLANK","PATCH"];
-let pos=3;
+let distance=0;
+let chasing=false;
+let chasing2=false;
+let enemyDist=12;
+let save=localStorage.getItem("save")||0;
 
-const t={
-es:{title:"TOY FACTORY",night:"Noche ",status:"Actividad detectada",power:"Energía"},
-en:{title:"TOY FACTORY",night:"Night ",status:"Activity detected",power:"Power"},
-pt:{title:"TOY FACTORY",night:"Noite ",status:"Atividade detectada",power:"Energia"}
-};
+function move(){
+distance++;
+document.getElementById("msg").innerText="Pasillos infinitos...";
 
-function setLang(l){
-lang=l;
-document.getElementById("lang").style.display="none";
-document.getElementById("game").style.display="block";
-document.getElementById("title").innerText=t[lang].title;
+if(Math.random()<0.35){
+startChase();
+}
+if(Math.random()<0.2){
+motherWatch();
+}
+saveGame();
 }
 
-function update(){
-if(!alive) return;
+function turn(d){
+document.getElementById("msg").innerText=
+d=="l"?"Giras a la izquierda...":"Giras a la derecha...";
+}
 
-power -= door?0.7:0.3;
-if(power<=0) door=false;
+function startChase(){
+chasing=true;
+enemyDist=12;
+let e=document.getElementById("enemy");
+e.style.display="block";
+document.getElementById("msg").innerText=
+"😈 HUGGY-X: 'Te huelo...'";
+chase();
+}
 
+function chase(){
+if(!chasing) return;
+enemyDist--;
+document.getElementById("enemy").style.transform=
+"scale("+(1+(12-enemyDist)*0.12)+")";
+if(enemyDist<=0){death("HUGGY-X");return;}
+setTimeout(chase,600);
+}
+
+function motherWatch(){
+chasing2=true;
+let m=document.getElementById("enemy2");
+m.style.display="block";
+document.getElementById("msg").innerText=
+"💗 MOTHER PINK: 'No mires atrás...'";
+setTimeout(()=>{
+m.style.display="none";
+chasing2=false;
+},3000);
+}
+
+function interact(){
 if(Math.random()<0.5){
-pos--;
-document.getElementById("step").play();
+showTV();
+}else{
+document.getElementById("msg").innerText=
+"🔒 Puzzle incompleto...";
+}
 }
 
-if(pos===1) document.getElementById("breath").play();
-if(pos===0){
-document.getElementById("bang").play();
-if(!door) death();
+function showTV(){
+document.getElementById("tv").style.display="block";
+document.getElementById("tv").innerText=
+"📺 REGISTRO 04:\n\nLos juguetes empezaron a moverse solos.\nImitan llantos.\nImitan voces.\nNo los apagues.";
+setTimeout(()=>{
+document.getElementById("tv").style.display="none";
+},5000);
 }
 
-document.getElementById("night").innerText=t[lang].night+nightNum;
-document.getElementById("status").innerText=t[lang].status+" ("+anims[Math.floor(Math.random()*4)]+")";
-document.getElementById("power").innerText=t[lang].power+": "+Math.floor(power)+"%";
-
-if(power<=0) document.getElementById("power").innerText="SIN ENERGÍA";
+function saveGame(){
+localStorage.setItem("save",distance);
 }
 
-function toggleDoor(){ if(power>0) door=!door; }
-
-function camera(){
-if(power<=0) return;
-power-=5;
-alert("Cámaras activas...");
+function death(by){
+document.body.innerHTML=
+"<h1 style='color:red;text-align:center;margin-top:40vh;'>"+
+"MUERTE POR "+by+"</h1>";
+localStorage.removeItem("save");
 }
-
-function death(){
-alive=false;
-document.getElementById("scream").play();
-document.getElementById("jumpscare").style.display="block";
-localStorage.setItem("night",1);
-}
-
-setInterval(update,1000);
 </script>
 
 </body>
 </html>
+
