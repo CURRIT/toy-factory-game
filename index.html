@@ -2,179 +2,83 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Factory Sin – Nightmare</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juego Simple</title>
 
 <style>
 body{
 margin:0;
-background:black;
-color:white;
 font-family:Arial;
-overflow:hidden;
-}
-#scene{
-position:relative;
-height:100vh;
-background:radial-gradient(circle at center,#111,#000);
-}
-#enemy{
-position:absolute;
-bottom:10%;
-left:40%;
-width:120px;
-height:200px;
-background:url("enemy.png") center/cover;
-display:none;
-filter:drop-shadow(0 0 20px red);
-}
-#enemy2{
-position:absolute;
-top:20%;
-right:10%;
-width:120px;
-height:200px;
-background:url("mother.png") center/cover;
-display:none;
-filter:drop-shadow(0 0 20px hotpink);
-}
-#ui{
-position:fixed;
-bottom:10px;
-width:100%;
+background:#111;
+color:white;
 text-align:center;
+}
+#game{
+padding:20px;
+}
+#room{
+margin:20px auto;
+width:90%;
+height:200px;
+background:#333;
+border:4px solid #777;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:20px;
 }
 button{
-padding:14px;
-margin:4px;
-font-size:18px;
-background:black;
-color:red;
-border:2px solid red;
-}
-#msg{
-position:fixed;
-top:10px;
-width:100%;
-text-align:center;
-font-size:18px;
-}
-#tv{
-display:none;
-position:fixed;
-inset:0;
-background:black;
-color:#0f0;
-padding:20px;
-font-size:18px;
+width:70px;
+height:70px;
+margin:5px;
+font-size:20px;
+background:#222;
+color:white;
+border:2px solid white;
 }
 </style>
 </head>
 
 <body>
 
-<div id="scene">
-  <div id="enemy"></div>
-  <div id="enemy2"></div>
+<div id="game">
+<h2>Exploración simple</h2>
+
+<div id="room">
+Estás en la sala (0, 0)
 </div>
 
-<div id="msg"></div>
-
-<div id="ui">
-  <button onclick="move()">⬆️ Avanzar</button><br>
-  <button onclick="turn('l')">⬅️ Girar</button>
-  <button onclick="turn('r')">➡️ Girar</button><br>
-  <button onclick="interact()">🖐️ Interactuar</button>
+<div>
+<button onclick="move(0,-1)">⬆️</button>
 </div>
-
-<div id="tv"></div>
+<div>
+<button onclick="move(-1,0)">⬅️</button>
+<button onclick="move(0,1)">⬇️</button>
+<button onclick="move(1,0)">➡️</button>
+</div>
+</div>
 
 <script>
-let distance=0;
-let chasing=false;
-let chasing2=false;
-let enemyDist=12;
-let save=localStorage.getItem("save")||0;
+let x = 0;
+let y = 0;
 
-function move(){
-distance++;
-document.getElementById("msg").innerText="Pasillos infinitos...";
+function move(dx, dy){
+x += dx;
+y += dy;
 
-if(Math.random()<0.35){
-startChase();
-}
-if(Math.random()<0.2){
-motherWatch();
-}
-saveGame();
-}
+document.getElementById("room").innerText =
+"Estás en la sala (" + x + ", " + y + ")";
 
-function turn(d){
-document.getElementById("msg").innerText=
-d=="l"?"Giras a la izquierda...":"Giras a la derecha...";
-}
+let room = document.getElementById("room");
 
-function startChase(){
-chasing=true;
-enemyDist=12;
-let e=document.getElementById("enemy");
-e.style.display="block";
-document.getElementById("msg").innerText=
-"😈 HUGGY-X: 'Te huelo...'";
-chase();
+// Cambia color según la zona
+if((x + y) % 2 === 0){
+room.style.background = "#444";
+} else {
+room.style.background = "#222";
 }
-
-function chase(){
-if(!chasing) return;
-enemyDist--;
-document.getElementById("enemy").style.transform=
-"scale("+(1+(12-enemyDist)*0.12)+")";
-if(enemyDist<=0){death("HUGGY-X");return;}
-setTimeout(chase,600);
-}
-
-function motherWatch(){
-chasing2=true;
-let m=document.getElementById("enemy2");
-m.style.display="block";
-document.getElementById("msg").innerText=
-"💗 MOTHER PINK: 'No mires atrás...'";
-setTimeout(()=>{
-m.style.display="none";
-chasing2=false;
-},3000);
-}
-
-function interact(){
-if(Math.random()<0.5){
-showTV();
-}else{
-document.getElementById("msg").innerText=
-"🔒 Puzzle incompleto...";
-}
-}
-
-function showTV(){
-document.getElementById("tv").style.display="block";
-document.getElementById("tv").innerText=
-"📺 REGISTRO 04:\n\nLos juguetes empezaron a moverse solos.\nImitan llantos.\nImitan voces.\nNo los apagues.";
-setTimeout(()=>{
-document.getElementById("tv").style.display="none";
-},5000);
-}
-
-function saveGame(){
-localStorage.setItem("save",distance);
-}
-
-function death(by){
-document.body.innerHTML=
-"<h1 style='color:red;text-align:center;margin-top:40vh;'>"+
-"MUERTE POR "+by+"</h1>";
-localStorage.removeItem("save");
 }
 </script>
 
 </body>
 </html>
-
