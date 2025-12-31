@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Toy Factory: Nightmare Shift</title>
+
+<style>
+body{
+margin:0;
+background:black;
+color:#0f0;
+font-family:monospace;
+text-align:center;
+}
+button{
+width:45%;
+padding:12px;
+margin:5px;
+background:black;
+color:#0f0;
+border:2px solid #0f0;
+font-size:16px;
+}
+#jumpscare{
+display:none;
+position:fixed;
+inset:0;
+background:black;
+z-index:999;
+}
+#jumpscare img{
+width:100%;
+height:100%;
+object-fit:cover;
+}
+</style>
+</head>
+
+<body>
+
+<div id="lang">
+<h2>Select Language</h2>
+<button onclick="setLang('es')">Español</button>
+<button onclick="setLang('en')">English</button>
+<button onclick="setLang('pt')">Português</button>
+</div>
+
+<div id="game" style="display:none;">
+<h2 id="title"></h2>
+<p id="night"></p>
+<p id="status"></p>
+<p id="power"></p>
+
+<button onclick="toggleDoor()">🚪 Puerta</button>
+<button onclick="camera()">📷 Cámaras</button>
+</div>
+
+<div id="jumpscare">
+<img src="jumpscare.jpg">
+</div>
+
+<audio id="step" src="step.mp3"></audio>
+<audio id="breath" src="breath.mp3"></audio>
+<audio id="bang" src="bang.mp3"></audio>
+<audio id="scream" src="scream.mp3"></audio>
+
+<script>
+let lang="es";
+let power=100;
+let door=false;
+let alive=true;
+let nightNum=localStorage.getItem("night")||1;
+let anims=["MR. GRIN","LULLA","CLANK","PATCH"];
+let pos=3;
+
+const t={
+es:{title:"TOY FACTORY",night:"Noche ",status:"Actividad detectada",power:"Energía"},
+en:{title:"TOY FACTORY",night:"Night ",status:"Activity detected",power:"Power"},
+pt:{title:"TOY FACTORY",night:"Noite ",status:"Atividade detectada",power:"Energia"}
+};
+
+function setLang(l){
+lang=l;
+document.getElementById("lang").style.display="none";
+document.getElementById("game").style.display="block";
+document.getElementById("title").innerText=t[lang].title;
+}
+
+function update(){
+if(!alive) return;
+
+power -= door?0.7:0.3;
+if(power<=0) door=false;
+
+if(Math.random()<0.5){
+pos--;
+document.getElementById("step").play();
+}
+
+if(pos===1) document.getElementById("breath").play();
+if(pos===0){
+document.getElementById("bang").play();
+if(!door) death();
+}
+
+document.getElementById("night").innerText=t[lang].night+nightNum;
+document.getElementById("status").innerText=t[lang].status+" ("+anims[Math.floor(Math.random()*4)]+")";
+document.getElementById("power").innerText=t[lang].power+": "+Math.floor(power)+"%";
+
+if(power<=0) document.getElementById("power").innerText="SIN ENERGÍA";
+}
+
+function toggleDoor(){ if(power>0) door=!door; }
+
+function camera(){
+if(power<=0) return;
+power-=5;
+alert("Cámaras activas...");
+}
+
+function death(){
+alive=false;
+document.getElementById("scream").play();
+document.getElementById("jumpscare").style.display="block";
+localStorage.setItem("night",1);
+}
+
+setInterval(update,1000);
+</script>
+
+</body>
+</html>
